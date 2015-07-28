@@ -1,11 +1,10 @@
-#_ = require 'lodash'
-
 # speed of sound in meters per sample is 0.0078 meters per sample
 
 module.exports =
-  # invert the amplitude at each sample
-  # IE
-  # For each sample, and each sample is a number, 
+
+
+  # invert the amplitude at each sample, meaning that
+  # for each sample, where sample is a number, 
   # multiply that number by negative one
   invert: (input) ->
     output = []
@@ -15,7 +14,8 @@ module.exports =
       output.push input[sampleIndex] * -1
       sampleIndex++
 
-    return output
+    output
+
 
   shift: (input, effect) ->
     output = []
@@ -36,6 +36,7 @@ module.exports =
       sampleIndex++
 
     output
+
 
   giveSpatiality: (input, effect) ->
     output = []
@@ -68,6 +69,7 @@ module.exports =
 
     [leftEarContent, rightEarContent]
 
+
   padBefore: (input, effect) ->
     paddingAmount = effect.paddingAmount or 30
     output = []
@@ -78,7 +80,9 @@ module.exports =
       padding++
 
     output = output.concat input
-    return output
+    output
+
+
 
   paddAfter: (input, effect) ->
     paddingAmount = effect.paddingAmount or 30
@@ -90,7 +94,9 @@ module.exports =
       padding++
 
     output = input.concat output
-    return output
+    output
+
+
 
   delay: (input, effect) ->
     output = []
@@ -111,7 +117,8 @@ module.exports =
         delayIndex++
       sampleIndex++
 
-    return output
+    output
+
 
   # 1024 is a pretty good effect.factor
   bitCrush: (input, effect) ->
@@ -119,17 +126,12 @@ module.exports =
 
     sampleIndex = 0
     while sampleIndex < input.length
-      crushed = ( input[sampleIndex] // effect.factor) * effect.factor
+      crushed = ( input[sampleIndex] // effect.factor ) * effect.factor
       output.push crushed
       sampleIndex++
 
-    return output
+    output
 
-  ###
-  bitCrush2: (buffer, effect) ->
-    _.map buffer, (sample) ->
-      ( input[sampleIndex] // effect.factor) * effect.factor
-  ###
 
   clip: (input, effect) ->
     threshold = effect.threshold or 1
@@ -145,13 +147,19 @@ module.exports =
         output.push input[sampleIndex]
       sampleIndex++
 
-    return output
+    output
+
+
 
   vol: (input, effect) ->
     output = []
+    
     for sample in input
       output.push sample * effect.factor
+    
     output
+
+
 
   fadeOut: (input, effect) ->
     effect = effect or {}
@@ -181,6 +189,8 @@ module.exports =
 
     output
 
+
+
   fadeIn: (input, effect) ->
     effect = effect or {}
     whereBegin = effect.beginAt or 0
@@ -207,7 +217,9 @@ module.exports =
       output.push input[sampleIndex]
       sampleIndex++
 
-    return output
+    output
+
+
 
   rampOut: (input, effect) ->
     effect = effect or {}
@@ -216,8 +228,9 @@ module.exports =
     rampParameters =
       beginAt: input.length - ramp
 
-    return @fadeOut(input, rampParameters)
+    @fadeOut(input, rampParameters)
 
+  
   rampIn: (input, effect) ->
     effect = effect or {}
     ramp = effect.rampLength or 60
@@ -225,13 +238,16 @@ module.exports =
     rampParameters =
       endAt: ramp
 
-    return @fadeIn(input, rampParameters)
+    @fadeIn(input, rampParameters)
+
 
   ramp: (input, effect) -> 
-    return @rampIn(@rampOut(input, effect), effect)
+     @rampIn @rampOut(input, effect), effect
+
 
   reverse: (input) ->
-    return input.reverse()
+    input.reverse()
+
 
   cutUpEveryGrain: (input, threshold) ->
     grains = []
@@ -246,7 +262,8 @@ module.exports =
         beginning = sampleIndex
       sampleIndex++
 
-    return grains
+    grains
+
 
   reverb: (input, effect) ->
     decay0 = 0.5 or effect.decay0
@@ -344,7 +361,8 @@ module.exports =
       forwardOutRay
 
     backPass = reverbBackPass(input, decay0, delays0)
-    return reverbForwardPass(backPass, decayON, delaysON)
+    reverbForwardPass backPass, decayON, delaysON
+
 
   convolve: (input, effect) ->
     effect = effect or {}
@@ -368,7 +386,9 @@ module.exports =
         convolveIndex++
       sampleIndex++
 
-    return output
+    output
+
+
 
   factorize: (fraction) ->
     numeratorsFactors = []
@@ -403,7 +423,9 @@ module.exports =
       else
         factoringCandidate++
 
-    return [numeratorsFactors, denominatorsFactors]
+    [numeratorsFactors, denominatorsFactors]
+
+
 
   speed: (input, effect) ->
     output = []
@@ -440,8 +462,9 @@ module.exports =
           averageValue /= amountOfEndSamples
           spedUpSound.push averageValue
 
-      return spedUpSound
+      spedUpSound
  
+
     divideSpeed = (sound, factorDecrease) ->
       slowedDownSound = []
 
@@ -466,7 +489,8 @@ module.exports =
         slowedDownSound.push sound[sound.length - 1]
         unAverageableEndBitIndex++
 
-      return slowedDownSound
+      slowedDownSound
+
 
     decreaseIndex = 0
     while decreaseIndex < factors[1].length
@@ -478,8 +502,9 @@ module.exports =
       input = multiplySpeed(input, factors[0][increaseIndex])
       increaseIndex++
 
-    output = input
-    return output
+    input
+
+
 
   grain: (input, effect) ->
     output = []
@@ -530,7 +555,9 @@ module.exports =
         sampleIndex++
       grainIndex++
 
-    return output
+    output
+
+
 
   superGrain: (input, effect) ->
     effect = effect or {}
@@ -569,6 +596,8 @@ module.exports =
         sampleIndex++
 
     output
+
+
 
   glissando: (input, effect) ->
     output = []
@@ -622,7 +651,9 @@ module.exports =
         sampleIndex++
       grainIndex++
 
-    return output
+    output
+
+
 
   lopass: (input, effect) ->
     effect = effect or {}
@@ -758,7 +789,9 @@ module.exports =
       output[sampleIndex] += input[sampleIndex] * (1 - mix)
       sampleIndex++
 
-    return output
+    output
+
+
 
   hipass: (input, effect) ->
     input0 = input
@@ -783,4 +816,4 @@ module.exports =
       output[whereAt + sampleIndex] += input0[sampleIndex]
       sampleIndex++
 
-    return output
+    output

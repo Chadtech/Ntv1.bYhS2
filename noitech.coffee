@@ -3,18 +3,21 @@ generate  = require './generate'
 effect    = require './effect'
 
 module.exports =
+
   generate: generate
   effect: effect
+
 
   convertTo64Bit: (input) ->
 
     sampleIndex = 0
-    
+
     while sampleIndex < input.length
       input[sampleIndex] = (input[sampleIndex] * 32767) // 1
       sampleIndex++
       
     input
+
 
   convertToFloat: (input) ->
     sampleIndex = 0
@@ -24,7 +27,9 @@ module.exports =
       
     input
 
+
   buildFile: (fileName, channels) ->
+
     manipulatedChannels = channels
     sameLength = true
     
@@ -235,6 +240,8 @@ module.exports =
     outputFile = new Buffer(filesData)
     fs.writeFileSync fileName, outputFile
 
+
+
   open: (fileName) ->
 
     data = []
@@ -274,8 +281,9 @@ module.exports =
         sampleIndex++
       channelIndex++
 
-    # console.log channels
     channels
+
+
 
   mix: (input0, input1, place) ->
     whereAt = place or 0
@@ -287,6 +295,8 @@ module.exports =
 
     input1
 
+
+
   join: (input0, input1) ->
     output = []
 
@@ -296,7 +306,9 @@ module.exports =
     for sample in input1
       output.push sample
 
-    return output
+    output
+
+
 
   split: (input, at) ->
     output0 = []
@@ -306,11 +318,12 @@ module.exports =
     while sampleIndex < at
       output0.push input[sampleIndex]
       sampleIndex++
+      
     while sampleIndex < input.length
       output1.push input[sampleIndex]
       sampleIndex++
 
-    return [output0, output1]
+    [output0, output1]
 
 
 

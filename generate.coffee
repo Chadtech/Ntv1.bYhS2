@@ -5,13 +5,17 @@ module.exports =
     amplitude = voice.amplitude or 1
     tone = voice.tone / 44100
     output = []
+
     sampleIndex = 0
     while sampleIndex < voice.sustain
       sample = amplitude
       sample *= Math.sin(Math.PI * 2 * sampleIndex * tone)
       output.push sample
       sampleIndex++
-    return output
+    
+    output
+
+
 
   saw: (voice) ->
     voice = voice or {}
@@ -78,6 +82,8 @@ module.exports =
 
     output
 
+
+
   triangle: (voice) ->
     voice = voice or {}
     amplitude = voice.amplitude or 1
@@ -141,7 +147,9 @@ module.exports =
       output[sampleIndex] *= (1 - harmonicAmplitudeAdjust)
       sampleIndex++
 
-    return output
+    output
+
+
 
   square: (voice) ->
     voice = voice or {}
@@ -205,7 +213,9 @@ module.exports =
       output[sampleIndex] *= (1 - harmonicAmplitudeAdjust)
       sampleIndex++
 
-    return output
+    output
+
+
 
   silence: (voice) ->
     voice = voice or {}
@@ -216,7 +226,7 @@ module.exports =
       output.push 0
       sampleIndex++
 
-    return output
+    output
 
 
 
