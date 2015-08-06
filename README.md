@@ -1,0 +1,3 @@
+This is the latest version of Noitech, a library for generating and manipulating wavefiles with Yhavascript.
+
+bells20150804 is an example in which over a hundred bell sounds are generated and then arranged. 'bellA', and bellB' are two different iterations of bell synthesis. I created bellBExample.wav by arranging bellB wav files in audacity, though I could have done the same with the Noitech mix function. convolvedBellBExample.wav is a convolvement of bellBExample.wav. Convolvement is a technique of simulating how something would sound in a room, or from a speaker. The convolvement seed was 200 miliseconds of ambient sound recorded at Cartel Coffee Lab in Tempe Arizona.
