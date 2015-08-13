@@ -365,10 +365,10 @@ module.exports =
 
 
   convolve: (input, effect) ->
-    effect = effect or {}
-    factor = effect.factor or 0.05
-    seed = effect.seed
-    output = []
+    effect  = effect or {}
+    factor  = effect.factor or 0.05
+    seed    = effect.seed
+    output  = []
 
     time = 0
     while time < (input.length + seed.length)
