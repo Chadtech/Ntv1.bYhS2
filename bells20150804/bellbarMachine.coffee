@@ -27,9 +27,9 @@ module.exports = (bar) ->
 
     melody = melodies[ lineIndex ]
 
-    _.map melody, (melodyItem, melodyIndex) =>
+    _.forEach melody, (melodyItem, melodyIndex) ->
 
-      if melodyItem isnt 'X'
+      if melodyItem isnt ''
 
         moment = melodyIndex
         moment *= beatDuration
@@ -39,7 +39,7 @@ module.exports = (bar) ->
 
         line = Nt.mix voices[ lineIndex ][ melodyItem ], line, moment
 
-      line
+    line
 
   output
 
