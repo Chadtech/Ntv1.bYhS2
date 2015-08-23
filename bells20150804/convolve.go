@@ -5,7 +5,7 @@ import (
     "fmt"
     // "io"
     // "io/ioutil"
-    // "strconv"
+    "strconv"
     "os"
     // "math"
 )
@@ -17,32 +17,45 @@ func check(e error){
   }
 }
 
-func convolver( audio []int, convolveSeed []int) []int {
 
-  lengthOfOutput := int64(len(audio) + len(convolveSeed))
+func convolver( audio []int, convolveSeed []int, factor float64) []int {
+
+  lengthOfOutput := len(audio) + len(convolveSeed)
   output := make( []int, lengthOfOutput )
 
-  for outputIndex := int64(0); outputIndex < lengthOfOutput; outputIndex++ {
+  for outputIndex := 0; outputIndex < lengthOfOutput; outputIndex++ {
     output[ outputIndex ] = 0
   }
 
-  for convolveIndex := int64(0); convolveIndex < int64(len(convolveSeed)); convolveIndex++ {
-    for audioIndex := int64(0); audioIndex < int64(len(audio)); audioIndex++ {
+  for audioIndex := 0; audioIndex < len(audio); audioIndex++ {
 
-      atConvolve := convolveSeed[ convolveIndex ]
-      if atConvolve > 32768 {
-        atConvolve -= 65536
+    atAudioIndex := float64(audio[ audioIndex ])
+    if atAudioIndex > 32767 {
+      atAudioIndex -= 65535
+    }
+
+
+    for convolveIndex := 0; convolveIndex < len(convolveSeed); convolveIndex++ {
+
+      atConvolveIndex := float64(convolveSeed[ convolveIndex ])
+      if atConvolveIndex > 32767 {
+        atConvolveIndex -= 65535
       }
 
-      factor := (float32(atConvolve) / 32767)
+      factor := (atConvolveIndex / 32767 ) * factor
+      output[ convolveIndex + audioIndex ] += int(atAudioIndex * factor )
 
-      output[ convolveIndex + audioIndex ] += int(float32(audio[ audioIndex ]) * factor)
+    }
 
+  }
+
+  for outputIndex := 0; outputIndex < lengthOfOutput; outputIndex++ {
+    if (output[ outputIndex ] < 0){
+      output[ outputIndex] += 65535
     }
   }
 
   return output
-
 }
 
 
@@ -62,11 +75,12 @@ func readStereoWAV( openFileName string ) [][]int{
   sizeOfAudioBuffer += 256 * int64(durationByte[1])
   sizeOfAudioBuffer += 65536 * int64(durationByte[2])
   sizeOfAudioBuffer += 16777216 * int64(durationByte[3])
-  durationOfAudio   := int64(sizeOfAudioBuffer / 2)
+  durationOfAudio   := int64(sizeOfAudioBuffer / 4)
 
-  output := make([][]int, 2 )
-  output[0] = make([]int, durationOfAudio)
-  output[1] = make([]int, durationOfAudio)
+  output    := make([][]int, 2 )
+  output[0] =  make([]int, durationOfAudio)
+  output[1] =  make([]int, durationOfAudio)
+
 
   for datumIndex := int64(0); datumIndex < (durationOfAudio); datumIndex++ {
 
@@ -74,23 +88,23 @@ func readStereoWAV( openFileName string ) [][]int{
       thisSampleByte := make([]byte, 2)
       readFile.Read( thisSampleByte )
 
-      output[0][ datumIndex / 2 ] = 0
-      output[0][ datumIndex / 2 ] += int(thisSampleByte[ 0 ])
-      output[0][ datumIndex / 2 ] += int(thisSampleByte[ 1 ]) * 256
+      output[0][ datumIndex ] = 0
+      output[0][ datumIndex ] += int(thisSampleByte[ 0 ])
+      output[0][ datumIndex ] += int(thisSampleByte[ 1 ]) * 256
   
 
       thisSampleByte = make([]byte, 2)
       readFile.Read( thisSampleByte )
 
-      output[1][ datumIndex / 2 ] = 0
-      output[1][ datumIndex / 2 ] += int(thisSampleByte[ 0 ])
-      output[1][ datumIndex / 2 ] += int(thisSampleByte[ 1 ]) * 256
+      output[1][ datumIndex ] = 0
+      output[1][ datumIndex ] += int(thisSampleByte[ 0 ])
+      output[1][ datumIndex ] += int(thisSampleByte[ 1 ]) * 256
 
   }
-
   return output
-
 }
+
+
 
 func readMonoWAV( openFileName string ) []int{
 
@@ -117,9 +131,9 @@ func readMonoWAV( openFileName string ) []int{
     readFile.Read( thisSampleByte )
 
     output[ datumIndex ] = 0
-    output[ datumIndex ] += int(thisSampleByte[ 0 ])
-    output[ datumIndex ] += int(thisSampleByte[ 1 ]) * 256
-  
+    output[ datumIndex ] += int( thisSampleByte[ 0 ] )
+    output[ datumIndex ] += int( thisSampleByte[ 1 ] ) * 256
+
   }
 
   return output
@@ -129,90 +143,100 @@ func readMonoWAV( openFileName string ) []int{
 
 func main() {
 
-  wavFile      := readStereoWAV( os.Args[1] )
-  convolveSeed := readMonoWAV( os.Args[2] )
+  fmt.Println( "Reading Wavs")
+  wavFile           := readStereoWAV( os.Args[1] )
+  convolveSeed      := readMonoWAV( os.Args[2] )
+  factor            := os.Args[3]
+  factorFloat, err  := strconv.ParseFloat(factor, 64)
 
 
-  wavFile[0] = convolver( wavFile[0], convolveSeed )
-  wavFile[1] = convolver( wavFile[1], convolveSeed )
+  fmt.Println( "Convolving Left Channel")
+  wavFile[0] = convolver( wavFile[0], convolveSeed, factorFloat )
+  fmt.Println( "Convolving Right Channel")
+  wavFile[1] = convolver( wavFile[1], convolveSeed, factorFloat )
 
-  fmt.Println(os.Args[1])
 
-  // savedFile, err := os.Create( os.Args[1] + "_CONVOLVEDw_" + os.Args[2] )
-  // check(err)
+  saveFileName := os.Args[1][0 : len(os.Args[1]) - 4 ]
+  saveFileName += "_CONVOLVEDw"
+  saveFileName += os.Args[2][0 : len(os.Args[2]) - 4]
+  saveFileName += ".wav"
 
-  // wavHeader := make([]byte, 44)
+  savedFile, err := os.Create( saveFileName )
+  check(err)
 
-  // wavHeader[0] = 82
-  // wavHeader[1] = 73
-  // wavHeader[2] = 70
-  // wavHeader[3] = 70
 
-  // wavHeader[4] = 36
-  // wavHeader[5] = 8
-  // wavHeader[6] = 0
-  // wavHeader[7] = 0
+  fmt.Println( "Saving File")
+  wavHeader := make([]byte, 44)
 
-  // wavHeader[8]  = 87
-  // wavHeader[9]  = 65
-  // wavHeader[10] = 86
-  // wavHeader[11] = 69
+  wavHeader[0] = 82
+  wavHeader[1] = 73
+  wavHeader[2] = 70
+  wavHeader[3] = 70
 
-  // wavHeader[12] = 102
-  // wavHeader[13] = 109
-  // wavHeader[14] = 116
-  // wavHeader[15] = 32
+  wavHeader[4] = 36
+  wavHeader[5] = 8
+  wavHeader[6] = 0
+  wavHeader[7] = 0
+
+  wavHeader[8]  = 87
+  wavHeader[9]  = 65
+  wavHeader[10] = 86
+  wavHeader[11] = 69
+
+  wavHeader[12] = 102
+  wavHeader[13] = 109
+  wavHeader[14] = 116
+  wavHeader[15] = 32
  
-  // wavHeader[16] = 16
-  // wavHeader[17] = 0
-  // wavHeader[18] = 0
-  // wavHeader[19] = 0
+  wavHeader[16] = 16
+  wavHeader[17] = 0
+  wavHeader[18] = 0
+  wavHeader[19] = 0
 
-  // wavHeader[20] = 1
-  // wavHeader[21] = 0
-  // wavHeader[22] = 2
-  // wavHeader[23] = 0
+  wavHeader[20] = 1
+  wavHeader[21] = 0
+  wavHeader[22] = 2
+  wavHeader[23] = 0
 
-  // wavHeader[24] = 68
-  // wavHeader[25] = 172
-  // wavHeader[26] = 0
-  // wavHeader[27] = 0
+  wavHeader[24] = 68
+  wavHeader[25] = 172
+  wavHeader[26] = 0
+  wavHeader[27] = 0
 
-  // wavHeader[28] = 68
-  // wavHeader[29] = 172
-  // wavHeader[30] = 0
-  // wavHeader[31] = 0
+  wavHeader[28] = 68
+  wavHeader[29] = 172
+  wavHeader[30] = 0
+  wavHeader[31] = 0
 
-  // wavHeader[32] = 4
-  // wavHeader[33] = 0
-  // wavHeader[34] = 16
-  // wavHeader[35] = 0
+  wavHeader[32] = 4
+  wavHeader[33] = 0
+  wavHeader[34] = 16
+  wavHeader[35] = 0
 
-  // wavHeader[36] = 100
-  // wavHeader[37] = 97
-  // wavHeader[38] = 116
-  // wavHeader[39] = 97
+  wavHeader[36] = 100
+  wavHeader[37] = 97
+  wavHeader[38] = 116
+  wavHeader[39] = 97
 
-  // wavHeader[40] = byte(len(pieceL) % 256)
-  // wavHeader[41] = byte(len(pieceL) / 256)
-  // wavHeader[42] = byte(len(pieceL) / 4096)
-  // wavHeader[43] = byte(len(pieceL) / 65536)
+  wavHeader[40] = byte(len(wavFile[0]) % 256)
+  wavHeader[41] = byte(len(wavFile[0]) / 256)
+  wavHeader[42] = byte(len(wavFile[0]) / 4096)
+  wavHeader[43] = byte(len(wavFile[0]) / 65536)
 
-  // wavData := make([]byte, (len(pieceL)) * 2)
+  wavData := make([]byte, (len(wavFile[0])) * 4)
 
-  // for audioIndex := 0; audioIndex < len(pieceL); audioIndex++ {
+  for audioIndex := 0; audioIndex < len(wavFile[0]); audioIndex++ {
 
-  //   wavData[  audioIndex * 2      ] = byte(pieceL[ audioIndex ] % 256)
-  //   wavData[ (audioIndex * 2) + 1 ] = byte(pieceL[ audioIndex ] / 256)
+    wavData[  audioIndex * 4      ] = byte(wavFile[0][ audioIndex ] % 256)
+    wavData[ (audioIndex * 4) + 1 ] = byte(wavFile[0][ audioIndex ] / 256)
+    wavData[  audioIndex * 4  + 2 ] = byte(wavFile[1][ audioIndex ] % 256)
+    wavData[ (audioIndex * 4) + 3 ] = byte(wavFile[1][ audioIndex ] / 256)
+  }
 
-  // }
+  savedFile.Write(wavHeader)
+  savedFile.Write(wavData)
 
-  // savedFile.Write(wavHeader)
-  // savedFile.Write(wavData)
-
-  // savedFile.Close()
-
-
+  savedFile.Close()
 }
 
 
