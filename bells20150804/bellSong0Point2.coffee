@@ -99,7 +99,7 @@ _.times 128, (time) =>
 allTimings = []
 _.times 6, ->
   anotherTiming = _.map timings, (timing) ->
-    (timing + (Math.random() * 1200) - 600) // 1
+    (timing + (Math.random() * 5000) - 2500) // 1
   allTimings.push anotherTiming
 
 

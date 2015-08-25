@@ -2,7 +2,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
   bar = 0
 
-  console.log 'BAR 0'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
@@ -22,7 +22,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
 
 
-  console.log 'BAR 1'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
@@ -43,7 +43,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
 
 
-  console.log 'BAR 2'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
@@ -63,7 +63,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
 
 
-  console.log 'BAR 3'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
@@ -83,7 +83,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
 
 
-  console.log 'BAR 4'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
@@ -103,7 +103,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
 
 
-  console.log 'BAR 5'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
@@ -123,7 +123,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
 
 
-  console.log 'BAR 6'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
@@ -144,7 +144,7 @@ module.exports = (lines, allTimings, voices, bellBar) ->
 
 
 
-  console.log 'BAR 7'
+  console.log 'BAR ' + bar
   bar++
   thisBar = 
     melodies: [
