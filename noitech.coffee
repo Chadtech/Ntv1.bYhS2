@@ -296,6 +296,17 @@ module.exports =
     input1
 
 
+  displace: (input0, input1, place) ->
+    whereAt = place or 0
+
+    sampleIndex = 0
+    while sampleIndex < input0.length
+      input1[whereAt + sampleIndex] = input0[sampleIndex]
+      sampleIndex++
+
+    input1
+
+
 
   join: (input0, input1) ->
     output = []
